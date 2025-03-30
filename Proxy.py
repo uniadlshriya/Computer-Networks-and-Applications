@@ -150,6 +150,8 @@ while True:
       # originServerRequest is the first line in the request and
       # originServerRequestHeader is the second line in the request
       # ~~~~ INSERT CODE ~~~~
+      originServerRequest = "GET http://http.badssl.com/index.html HTTP/1.1"
+      originServerRequestHeader = f"Host: http://http.badssl.com/"
       # ~~~~ END CODE INSERT ~~~~
 
       # Construct the request to send to the origin server
@@ -170,6 +172,7 @@ while True:
 
       # Get the response from the origin server
       # ~~~~ INSERT CODE ~~~~
+
       # ~~~~ END CODE INSERT ~~~~
 
       # Send the response to the client
