@@ -120,6 +120,8 @@ while True:
     # ~~~~ INSERT CODE ~~~~
     clientSocket.send("HTTP/1.1 200 OK\r\n")
     clientSocket.send("Content-Type:text/html\r\n")
+    clientSocket.send("\r\n")
+    clientSocket.sendall(cacheData.encode('utf-8')) 
     # ~~~~ END CODE INSERT ~~~~
     cacheFile.close()
     print ('Sent to the client:')
@@ -130,7 +132,7 @@ while True:
     # Create a socket to connect to origin server
     # and store in originServerSocket
     # ~~~~ INSERT CODE ~~~~
-    originServerSocket = socket(socket.AF_INET, socket.SOCK_STREAM)
+    originServerSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     # ~~~~ END CODE INSERT ~~~~
 
     print ('Connecting to:\t\t' + hostname + '\n')
@@ -139,7 +141,7 @@ while True:
       address = socket.gethostbyname(hostname)
       # Connect to the origin server
       # ~~~~ INSERT CODE ~~~~
-      originServerSocket.connect((hostname, address))
+      originServerSocket.connect((address, 80))
       # ~~~~ END CODE INSERT ~~~~
       print ('Connected to origin Server')
 
@@ -150,8 +152,14 @@ while True:
       # originServerRequest is the first line in the request and
       # originServerRequestHeader is the second line in the request
       # ~~~~ INSERT CODE ~~~~
-      originServerRequest = "GET http://http.badssl.com/index.html HTTP/1.1"
-      originServerRequestHeader = f"Host: http://http.badssl.com/"
+      header = {
+          "Host": hostname,
+          "User-Agent": "ProxyServer",
+          "Accept": "*/*",
+          "Connection": "close"
+      }
+      originServerRequest = f"GET {resource} {requestParts[2]}"
+      originServerRequestHeader =  "\r\n".join(f"{key}: {val}" for key, val in header.i)
       # ~~~~ END CODE INSERT ~~~~
 
       # Construct the request to send to the origin server
@@ -172,11 +180,15 @@ while True:
 
       # Get the response from the origin server
       # ~~~~ INSERT CODE ~~~~
-
+      originServerResponse = originServerSocket.recv(BUFFER_SIZE)
       # ~~~~ END CODE INSERT ~~~~
 
       # Send the response to the client
       # ~~~~ INSERT CODE ~~~~
+      clientSocket.send("HTTP/1.1 200 OK\r\n")
+      clientSocket.send("Content-Type:text/html\r\n")
+      clientSocket.send("\r\n")
+      clientSocket.send (originServerResponse)
       # ~~~~ END CODE INSERT ~~~~
 
       # Create a new file in the cache for the requested file.
@@ -188,6 +200,7 @@ while True:
 
       # Save origin server response in the cache file
       # ~~~~ INSERT CODE ~~~~
+      cacheFile.write(originServerResponse)
       # ~~~~ END CODE INSERT ~~~~
       cacheFile.close()
       print ('cache file closed')
