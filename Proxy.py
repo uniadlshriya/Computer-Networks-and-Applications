@@ -20,7 +20,7 @@ proxyPort = int(args.port)
 try:
   # Create a server socket
   # ~~~~ INSERT CODE ~~~~
-  server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+  serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
   # ~~~~ END CODE INSERT ~~~~
   print ('Created socket')
 except:
@@ -30,7 +30,7 @@ except:
 try:
   # Bind the the server socket to a host and port
   # ~~~~ INSERT CODE ~~~~
-  server.bind((proxyHost, proxyPort))
+  serverSocket.bind((proxyHost, proxyPort))
   # ~~~~ END CODE INSERT ~~~~
   print ('Port is bound')
 except:
@@ -40,7 +40,7 @@ except:
 try:
   # Listen on the server socket
   # ~~~~ INSERT CODE ~~~~
-  server.listen(0)
+  serverSocket.listen(1)
   # ~~~~ END CODE INSERT ~~~~
   print ('Listening to socket')
 except:
@@ -55,7 +55,7 @@ while True:
   # Accept connection from client and store in the clientSocket
   try:
     # ~~~~ INSERT CODE ~~~~
-    clientSocket, addr = server.accept()
+    (clientSocket, addr) = serverSocket.accept()
     # ~~~~ END CODE INSERT ~~~~
     print ('Received a connection')
   except:
@@ -118,10 +118,11 @@ while True:
     # ProxyServer finds a cache hit
     # Send back response to client 
     # ~~~~ INSERT CODE ~~~~
-    clientSocket.send("HTTP/1.1 200 OK\r\n")
-    clientSocket.send("Content-Type:text/html\r\n")
-    clientSocket.send("\r\n")
-    clientSocket.sendall(cacheData.encode('utf-8')) 
+    #clientSocket.send("HTTP/1.1 200 OK\r\n".encode('utf-8'))
+    #clientSocket.send("Content-Type:text/html\r\n".encode('utf-8'))
+    #clientSocket.send("\r\n")
+    dataCache = cacheData.encode(utf-8)
+    clientSocket.sendall(dataCache)
     # ~~~~ END CODE INSERT ~~~~
     cacheFile.close()
     print ('Sent to the client:')
@@ -159,7 +160,7 @@ while True:
           "Connection": "close"
       }
       originServerRequest = f"GET {resource} {requestParts[2]}"
-      originServerRequestHeader =  "\r\n".join(f"{key}: {val}" for key, val in header.i)
+      originServerRequestHeader =  "\r\n".join(f"{key}: {val}" for key, val in header.items())
       # ~~~~ END CODE INSERT ~~~~
 
       # Construct the request to send to the origin server
@@ -185,9 +186,9 @@ while True:
 
       # Send the response to the client
       # ~~~~ INSERT CODE ~~~~
-      clientSocket.send("HTTP/1.1 200 OK\r\n")
-      clientSocket.send("Content-Type:text/html\r\n")
-      clientSocket.send("\r\n")
+      #clientSocket.send("HTTP/1.1 200 OK\r\n".encode())
+      #clientSocket.send("Content-Type:text/html\r\n".encode())
+      #clientSocket.send("\r\n".encode())
       clientSocket.send (originServerResponse)
       # ~~~~ END CODE INSERT ~~~~
 
