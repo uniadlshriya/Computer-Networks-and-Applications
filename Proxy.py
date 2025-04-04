@@ -20,6 +20,7 @@ proxyPort = int(args.port)
 try:
   # Create a server socket
   # ~~~~ INSERT CODE ~~~~
+  # Initialising the socket 
   serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
   # ~~~~ END CODE INSERT ~~~~
   print ('Created socket')
@@ -30,6 +31,7 @@ except:
 try:
   # Bind the the server socket to a host and port
   # ~~~~ INSERT CODE ~~~~
+  # In the code below we are binding the socket created to a IP host and port number
   serverSocket.bind((proxyHost, proxyPort))
   # ~~~~ END CODE INSERT ~~~~
   print ('Port is bound')
@@ -40,6 +42,7 @@ except:
 try:
   # Listen on the server socket
   # ~~~~ INSERT CODE ~~~~
+  # When the socket is listening, it allows the server to accept new incoming connections. 
   serverSocket.listen(1)
   # ~~~~ END CODE INSERT ~~~~
   print ('Listening to socket')
@@ -55,6 +58,7 @@ while True:
   # Accept connection from client and store in the clientSocket
   try:
     # ~~~~ INSERT CODE ~~~~
+    # Server is accepting incoming connections
     (clientSocket, addr) = serverSocket.accept()
     # ~~~~ END CODE INSERT ~~~~
     print ('Received a connection')
@@ -65,9 +69,12 @@ while True:
   # Get HTTP request from client
   # and store it in the variable: message_bytes
   # ~~~~ INSERT CODE ~~~~
+  # Data is received from the client, and the request is read.
   message_bytes = clientSocket.recv(1024)
   # ~~~~ END CODE INSERT ~~~~
+  # The message is decoded from string to bytes, as the messages are sent in plain text and they are decoded from bytes to a readable string.
   message = message_bytes.decode('utf-8')
+  # This prints the request received from the client
   print ('Received request:')
   print ('< ' + message)
 
@@ -83,7 +90,8 @@ while True:
   print ('')
 
   # Get the requested resource from URI
-  # Remove http protocol from the URI
+  # Removes http protocol from the URI, 
+  # It removes the HTTPS scheme from the URI, to split the hostname and the resource
   URI = re.sub('^(/?)http(s?)://', '', URI, count=1)
 
   # Remove parent directory changes - security
@@ -110,7 +118,7 @@ while True:
 
     fileExists = os.path.isfile(cacheLocation)
     
-    # Check wether the file is currently in the cache
+    # Checks whether a cache file exists, else it writes to cache if it is newly fetched from the server
     cacheFile = open(cacheLocation, "r")
     cacheData = cacheFile.readlines()
 
@@ -118,9 +126,7 @@ while True:
     # ProxyServer finds a cache hit
     # Send back response to client 
     # ~~~~ INSERT CODE ~~~~
-    #clientSocket.send("HTTP/1.1 200 OK\r\n".encode('utf-8'))
-    #clientSocket.send("Content-Type:text/html\r\n".encode('utf-8'))
-    #clientSocket.send("\r\n")
+    # The cached data is converted to bytes before sending all the cached response to the client
     dataCache = cacheData.encode(utf-8)
     clientSocket.sendall(dataCache)
     # ~~~~ END CODE INSERT ~~~~
@@ -128,7 +134,7 @@ while True:
     print ('Sent to the client:')
     print ('> ' + cacheData)
   except:
-    # cache miss.  Get resource from origin server
+    # cache miss. Get resource from origin server
     originServerSocket = None
     # Create a socket to connect to origin server
     # and store in originServerSocket
@@ -142,6 +148,7 @@ while True:
       address = socket.gethostbyname(hostname)
       # Connect to the origin server
       # ~~~~ INSERT CODE ~~~~
+      # Connecting to the origin server with the specified address and port number.
       originServerSocket.connect((address, 80))
       # ~~~~ END CODE INSERT ~~~~
       print ('Connected to origin Server')
@@ -154,11 +161,12 @@ while True:
       # originServerRequestHeader is the second line in the request
       # ~~~~ INSERT CODE ~~~~
       header = {
-          "Host": hostname,
-          "User-Agent": "ProxyServer",
-          "Accept": "*/*",
-          "Connection": "close"
+          "Host": hostname,  # The hostname of the origin server
+          "User-Agent": "ProxyServer",  # Identifies the proxy server making the request
+          "Accept": "*/*",     # Content from the server is accepted
+          "Connection": "close"  # Closes the connection once responding 
       }
+      # The request header is formatted with key vales from above and is properly formatted as a string
       originServerRequest = f"GET {resource} {requestParts[2]}"
       originServerRequestHeader =  "\r\n".join(f"{key}: {val}" for key, val in header.items())
       # ~~~~ END CODE INSERT ~~~~
@@ -181,18 +189,17 @@ while True:
 
       # Get the response from the origin server
       # ~~~~ INSERT CODE ~~~~
+      # Response received from the origin server
       originServerResponse = originServerSocket.recv(BUFFER_SIZE)
       # ~~~~ END CODE INSERT ~~~~
 
       # Send the response to the client
       # ~~~~ INSERT CODE ~~~~
-      #clientSocket.send("HTTP/1.1 200 OK\r\n".encode())
-      #clientSocket.send("Content-Type:text/html\r\n".encode())
-      #clientSocket.send("\r\n".encode())
       clientSocket.send (originServerResponse)
       # ~~~~ END CODE INSERT ~~~~
 
-      # Create a new file in the cache for the requested file.
+      # Create a new file in the cache for the requested file. 
+      # It also ensures the cache directory exists before writing the files
       cacheDir, file = os.path.split(cacheLocation)
       print ('cached directory ' + cacheDir)
       if not os.path.exists(cacheDir):
@@ -206,7 +213,7 @@ while True:
       cacheFile.close()
       print ('cache file closed')
 
-      # finished communicating with origin server - shutdown socket writes
+      # Once finished communicating with the origin server - shutdown socket 
       print ('origin response received. Closing sockets')
       originServerSocket.close()
        
@@ -214,7 +221,7 @@ while True:
       print ('client socket shutdown for writing')
     except OSError as err:
       print ('origin server request failed. ' + err.strerror)
-
+  # Ending the connection 
   try:
     clientSocket.close()
   except:
